@@ -1,0 +1,241 @@
+****************Comparision Operators
+$eq
+$ne
+$gt
+db.Employee.find({ "Age": { "$gt": 20 } })
+$gte
+$lt
+$lte
+$in
+db.Employee.find ( { Department: { $in: ["IT", "HR"] } } )
+$nin : Not in
+db.Employee.find ( { Department: { $nin: ["IT", "HR"] } } )
+
+
+******************Element Operators
+$exists
+db.Employee.find( { Age: { $exists: true } } )
+
+$type
+db.addressBook.find({
+  "zipCode": {
+    $type: "string"
+  }
+})
+
+$size: 
+ return all the documents in the specified collection where the field is an array with 2 elements:
+ { field: [ orange, apple] } 
+db.addressBook.find( { zipCode: { $size: 2 } });
+
+
+**************Logical Operators********************
+$and: 
+db.Employee.find( { $and: [ { Salary: { $lte: 40000 } }, { Department:"IT" } ] } )
+
+$or
+db.Employee.find( { $or: [ { Salary: { $lt: 15000 } }, { Department:"IT" } ] } );
+
+$nor
+db.Employee.find({ 
+    "$nor": [ 
+        { "Department": "IT" }, 
+        { "City": "London" } 
+    ] 
+}).pretty()
+
+
+$not
+db.Employee.find({ 
+    "Salary": { "$not": { "$gt": 50000 } } 
+}).pretty()
+********************************
+
+Projections: is another name for selecting certian fields ie showing or hidding the desired fields
+
+*****************************
+
+
+Lets Understand some basic operators which will help us to perform Aggregation pipeline and will be useful
+$count:
+db.Employee.find().count();
+
+$limit
+db.Employee.find().limit(3);
+
+$match
+db.Employee.find({ Department: "IT" });
+$sort
+db.Employee.find().sort({ Salary: -1 });
+$project
+db.Employee.find({}, { Name: 1, Salary: 1, _id: 0 });
+
+
+
+
+Aggregation:
+Helps in performing few operations like: min,max,sum etc...
+
+syntax
+db.collectionName.aggregate(pipeline,options);
+
+Pipeline:
+A sequence of opertions
+Pipeline is an Array
+
+
+Valid Aggregation Stages
+$count
+$group
+$limit
+$lookup
+$match
+$merge
+$sort
+$project
+$unwind
+$unset
+etc.. and many more
+
+Before we start using aggreation lets understand the use of sum,min,max,avg ...
+db.Employee.aggregate([
+    {
+        $group: {
+            _id: null,                  // No grouping field
+            totalSalary: { $sum: "$Salary" }, 
+            minSalary: { $min: "$Salary" },
+            maxSalary: { $max: "$Salary" },
+            avgSalary: { $avg: "$Salary" }
+        }
+    }
+]);
+
+or we can also write it like below
+db.Employee.aggregate([
+    { $project: { Salary: 1 } },  
+    { $sort: { Salary: -1 } },  
+    { $limit: 1 }  
+]);
+
+
+
+
+Samples:
+
+1.Count the total number of employees in each department from the Employee table
+
+db.Employee.aggregate([
+    {
+        $group: {
+            _id: "$Department",       // Group by Department
+            totalEmployees: { $sum: 1 }  // Count the number of employees
+        }
+    }
+]);
+
+2. Count the total salary given to each department in the employee table
+db.Employee.aggregate([
+    {
+        $group: {
+            _id: "$Department",       // Group by Department
+            totalSalary: { $sum: "$Salary" }  // Sum the salary for each department
+        }
+    }
+]);
+
+3.Find the Highest and Lowest salary in Each Department in the Employee table
+db.Employee.aggregate([
+    {
+        $group: {
+            _id: "$Department",       // Group by Department
+            highestSalary: { $max: "$Salary" },  // Find Highest Salary
+            lowestSalary: { $min: "$Salary" }   // Find Lowest Salary
+        }
+    }
+]);
+
+4.Find the average salary of each department
+db.Employee.aggregate([
+    {
+        $group: {
+            _id: "$Department",       // Group by Department
+            avgSalary: { $avg: "$Salary" }  // Calculate Average Salary
+        }
+    }
+]);
+
+
+
+****************Lets create a pipeline with some stages to understand**************
+find all the departments where the maximum salary is greater than or equal to  50000.
+db.Employee.aggregate([
+    {
+        $group: {
+            _id: "$Department",
+            maxSalary: { $max: "$Salary" }
+        }
+    },
+    {
+        $match: {
+            maxSalary: { $gte: 50000 }
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            Department: "$_id",
+            maxSalary: 1
+        }
+    }
+]);
+
+
+
+*********** Lets work with lookup********************
+
+db.Course.insertMany([
+  { _id: 10, CourseName: "Oracle", CourseFee: 3500 },
+  { _id: 20, CourseName: "MySQL", CourseFee: 3000 },
+  { _id: 30, CourseName: "SQL Server", CourseFee: 4500 }
+]);
+
+db.Student.insertMany([
+  { _id: 1001, StudentName: "James", CourseId: 10 },
+  { _id: 1002, StudentName: "Smith", CourseId: 20 },
+  { _id: 1003, StudentName: "Warner", CourseId: 30 },
+  { _id: 1004, StudentName: "Sara", CourseId: 10 },
+  { _id: 1005, StudentName: "Pam", CourseId: 20 }
+]);
+
+
+1.Retrieving all rows (matching & unmatching) from the left side table. But retrieving matching rows from the right side table.
+
+db.Student.aggregate([
+    {
+      $lookup: {
+        from: "Course",           // The collection to join with
+        localField: "CourseId",   // The field in the Student collection
+        foreignField: "_id",      // The field in the Course collection
+        as: "CourseDetails"       // Output array field name
+      }
+    }
+  ]);
+
+
+Another bonus ways
+If you want to flatten the output (remove the CourseDetails array and merge fields), you can use $unwind:
+
+db.Student.aggregate([
+  {
+    $lookup: {
+      from: "Course",
+      localField: "CourseId",
+      foreignField: "_id",
+      as: "CourseDetails"
+    }
+  },
+  { $unwind: "$CourseDetails" } // Flattens the array
+]);
+
+
+

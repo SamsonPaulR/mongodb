@@ -1,0 +1,217 @@
+1. Login to Mongodb after installation using the below command.
+mongosh
+
+2. show dbs: This command lists all databases.
+3.use comapanyinfo; This command is used to switch to the desired database.
+3. show collections: This command is used to list all tables in database.
+4. db.dropDatabase(): This coomand drops a database
+5.db.collectioname.drop(): Removes a  collection
+
+
+Other important notes
+1.db.adminCommand({ getCmdLineOpts: 1 }): this will show the path where mongodb stores the database and collections
+2. mongod --dbpath "D:\mongodb_data" : This can be used when you want to start mongodb from your custom path
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Create:
+
+db.myEmp.insertOne({name: "Seema", dept: "HR", Qualification: "MBA"});// one record at a time
+
+db.myEmp.insertMany([
+{name: "Pooja", dept: "HR", Qualification: "MCA"},
+{name: "Sonia", dept: "HR", Qualification: "B.Tech"}]); // Array of records
+
+ 
+
+Read********************************Searching Samples*************
+db.myEmp.find()
+db.myEmp.find({"dept":"HR"}): Displays only those which belong to Hr
+db.myEmp.find({"dept":"HR"},{"name":0}): excludes "name field"
+db.myEmp.find({"dept":"HR"},{"name":1}): includes "name field"
+db.myEmp.find({},{"dept":1},{"_id":0}): includes only dept field and excludes id field
+
+db.myEmp.find({ "dept": { $exists: true } }):find employees who have a dept field (whether it's "HR" or something else
+
+
+db.myEmp.find({ "dept": { $exists: true } }).count();
+or
+db.myEmp.count({ "dept": { $exists: true } })
+
+
+********Update Documents***************************
+db.collectionName.updateOne()
+db.collectionName.updateMany()
+db.collectionName.replaceOne()
+
+
+db.myEmp.updateOne({"dept":"HR"}, {$set:{"Qualification": "BCA"}})
+db.myEmp.updateMany({"dept":"HR"}, {$set:{"Qualification": "BCA"}})
+db.myEmp.replaceOne({"dept":"Designing"}, {"Qualification": "M.Tech"})
+
+
+*************Delete Documents*****************
+db.collectionName.deleteOne()
+db.collectionName.deleteMany()
+
+db.myEmp.deleteOne({"dept":"Designing"})
+db.myEmp.deleteMany({"dept":"HR"})
+
+
+
+
+*********** Replace Document
+
+
+db.collection.replaceOne() 
+
+db.myEmp.replaceOne({}, {name: "Jaya", dept:"Hr",Qualification: "BE"}): This document wiil replace the very first document in tis collection 
+
+
+db.myEmp.replaceOne({name: "Sonia"}, {name:"Jaya",dept:"Hr",Qualification: "BE"}); with filter you can also replace
+db.myEmp.replaceOne({name: "Sonia"}, {name:"Mona",dept:"Hr",Qualification: "BE"},{upsert:true});if the document is not find insert a new record using upsert:true
+
+
+************** Update Document
+db.collectionName.updateOne() 
+db.myEmp.updateOne({}, {$set:{Qualification:"BCA"}})
+db.myEmp.updateOne({name: "Pooja"}, {$set:{Qualification:"Admin"}})
+
+***********Update with Multiple Fields
+db.myEmp.updateOne({name: "Alia"}, {$set:{dept:"Hr",Qualification:"BCA"}}): if no matching found no operation is performed
+
+db.myEmp.updateOne({name: "Alia"}, {$set:{dept:"Hr",Qualification:"BCA"}},{upsert:true}): if no matching found  operation is performed by adding a new document
+
+or
+
+db.collectionName.updateMany() 
+
+
+
+****************Delete
+db.collection.deleteOne()
+db.collection.deleteMany()
+
+
+db.myEmp.deleteOne({}): Deletes the very first document in the collections
+
+db.myEmp.deleteOne({Qualification:"BE"}): Deletes the very first document in the collections of the matched filter
+
+db.myEmp.deleteMany({}): deletes all documents
+
+db.myEmp.deleteMany({depte:"Hr"}): deletes all documents which match the filter
+
+
+*********** Embeded Documents
+db.myEmp.insertOne({name: "Mahesh", dept: "HR", Qualification: "MCA", Address:{city:"Bangalore", state:"Kar", pincode:560001}})
+
+
+**********Find Operations on Embeded Documents
+db.myEmp.find({Address:{city:"Bangalore", state:"Kar", pincode:560001}}).pretty();
+db.myEmp.find({ "Address.city": "Bangalore" }).pretty();
+
+
+db.myEmp.find({},{Address: 1 }); retrives only Address related documents
+
+db.myEmp.find({},{_id:0,Address: 1 }); retrives only Address related documents but hides _id values
+
+
+db.myEmp.find({},{_id:0,Address: 0 }); retrives only MyEmp related documents but hides _id and Address values
+
+
+
+db.myEmp.find({ "Address.city": "Bangalore" }, { _id: 0, Address: 1 });
+
+db.myEmp.find({ "Address.city": "Bangalore" }, { _id: 0, "Address.pincode": 1 }); : it filter the city and then displays only pincode field not all fields
+
+
+lets now add few array of Nested Object Address
+
+db.myEmp.insertOne({name: "Jayesh", dept: "HR", Qualification: "MCA", 
+Address:[{city:"Bangalore", state:"Kar", pincode:560001},
+{city:"Chennai", state:"TN", pincode:520001},
+{city:"Hyderabad", state:"Andhra", pincode:540001}],
+
+})
+
+
+
+
+db.myEmp.find({"Address.0.city":"Bangalore"}).pretty();
+
+
+db.myEmp.find({ "Address.0.city": "Bangalore" },{ "name": 1, "dept": 1, "Qualification": 1, "Address.0": 1 }).pretty();
+and try this
+db.myEmp.find(
+  { "Address.0.city": "Bangalore" }, 
+  { "name": 1, "dept": 1, "Qualification": 1, "Address": { $slice: 1 } }
+).pretty();
+
+
+
+
+db.myEmp.find(
+  { "Address.0.city": "Bangalore" }, 
+  {"Address": { $slice: 1 } }
+).pretty();
+
+
+
+db.myEmp.find(
+  { "Address.0.city": "Bangalore" }, 
+  {"name":0,"Address": { $slice: 1 } }
+).pretty();
+
+
+
+
+
+// Removing Fields
+db.empaddress.updateMany({}, { $unset: { empid: "" } });
+db.empaddress.updateMany({}, { $unset: { empid: "", dept: "" } }); // mutiple fields
+
+// Renaming fields
+db.empaddress.updateMany({}, { $rename: { "empid": "employeeId" } });
+
+// Adding primary key is done using createIndex
+Steps:
+1. Create a collection
+db.createCollection("empdata");
+2.db.empdata.createIndex({"empid":1,unique:true});
+
+or for mulitple primary key
+db.empdata.createIndex({empid:1,aaddharid:1},{unique:true});
+
+3. check
+db.empdata.getIndexes();
+
+4.drop index
+db.empdata.dropIndex("empid");
+
+db.empaddress.dropIndex("addid_1_empid_1");
+
+5.drop all indexes
+Third will drop all non-_id (ie _id index which is by default created )
+db.empdata.dropIndexes()
+
+

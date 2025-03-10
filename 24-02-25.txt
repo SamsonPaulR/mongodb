@@ -1,0 +1,258 @@
+test> show dbs
+admin   40.00 KiB
+config  60.00 KiB
+local   40.00 KiB
+test> use companyinfo;
+switched to db companyinfo
+companyinfo> show collections;
+
+companyinfo> db.adminCommand({ getCmdLineOpts:1});       --------used to find storage path
+{
+  argv: [
+    'C:\\Program Files\\MongoDB\\Server\\8.0\\bin\\mongod.exe',
+    '--config',
+    'C:\\Program Files\\MongoDB\\Server\\8.0\\bin\\mongod.cfg',
+    '--service'
+  ],
+  parsed: {
+    config: 'C:\\Program Files\\MongoDB\\Server\\8.0\\bin\\mongod.cfg',
+    net: { bindIp: '127.0.0.1', port: 27017 },
+    service: true,
+    storage: { dbPath: 'C:\\Program Files\\MongoDB\\Server\\8.0\\data' },
+    systemLog: {
+      destination: 'file',
+      logAppend: true,
+      path: 'C:\\Program Files\\MongoDB\\Server\\8.0\\log\\mongod.log'
+    }
+  },
+  ok: 1
+}
+
+mongod --dbpath "  " --------setpath
+
+myEmp> db.myEmp.insertMany([{name:"Albin",dept:"Physics",qualification:"MCA"},{name:"Samson",dept:"IT",qualification:"MSC"}]);
+
+test> use myEmp
+switched to db myEmp
+myEmp> db.myEmp.find();
+[
+  {
+    _id: ObjectId('67bc0a557dbea72d7acb0ce2'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  },
+  {
+    _id: ObjectId('67bc0af57dbea72d7acb0ce3'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  }
+]
+myEmp> db.myEmp.find.pretty();
+TypeError: db.myEmp.find.pretty is not a function
+myEmp> db.myEmp.find().pretty();
+[
+  {
+    _id: ObjectId('67bc0a557dbea72d7acb0ce2'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  },
+  {
+    _id: ObjectId('67bc0af57dbea72d7acb0ce3'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  }
+]
+myEmp> db.myEmp.find({"dept:"HR"});
+Uncaught:
+SyntaxError: Unexpected token (1:22)
+
+> 1 | db.myEmp.find({"dept:"HR"});
+    |                       ^
+  2 |
+
+myEmp> db.myEmp.find({"dept":"HR"});
+[
+  {
+    _id: ObjectId('67bc0a557dbea72d7acb0ce2'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  },
+  {
+    _id: ObjectId('67bc0af57dbea72d7acb0ce3'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  }
+]
+myEmp> db.myEmp.insertMany([{name:"Albin",dept:"Physics",qualification:"MCA"},{name:"Samson",dept:"IT",qualification:"MSC"}]);
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('67bc0da09b1e34496dcb0ce2'),
+    '1': ObjectId('67bc0da09b1e34496dcb0ce3')
+  }
+}
+myEmp> db.myEmp.find();
+[
+  {
+    _id: ObjectId('67bc0a557dbea72d7acb0ce2'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  },
+  {
+    _id: ObjectId('67bc0af57dbea72d7acb0ce3'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  },
+  {
+    _id: ObjectId('67bc0da09b1e34496dcb0ce2'),
+    name: 'Albin',
+    dept: 'Physics',
+    qualification: 'MCA'
+  },
+  {
+    _id: ObjectId('67bc0da09b1e34496dcb0ce3'),
+    name: 'Samson',
+    dept: 'IT',
+    qualification: 'MSC'
+  }
+]
+myEmp> db.find().pretty();
+TypeError: db.find is not a function
+myEmp> db.myEmp.find().pretty();
+[
+  {
+    _id: ObjectId('67bc0a557dbea72d7acb0ce2'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  },
+  {
+    _id: ObjectId('67bc0af57dbea72d7acb0ce3'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  },
+  {
+    _id: ObjectId('67bc0da09b1e34496dcb0ce2'),
+    name: 'Albin',
+    dept: 'Physics',
+    qualification: 'MCA'
+  },
+  {
+    _id: ObjectId('67bc0da09b1e34496dcb0ce3'),
+    name: 'Samson',
+    dept: 'IT',
+    qualification: 'MSC'
+  }
+]
+myEmp> db.myEmp.find({"dept":"HR"});
+[
+  {
+    _id: ObjectId('67bc0a557dbea72d7acb0ce2'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  },
+  {
+    _id: ObjectId('67bc0af57dbea72d7acb0ce3'),
+    name: 'seema',
+    dept: 'HR',
+    qualification: 'MBA'
+  }
+]
+myEmp> db.myEmp.find({"dept":"HR"},{"name":0});
+[
+  {
+    _id: ObjectId('67bc0a557dbea72d7acb0ce2'),
+    dept: 'HR',
+    qualification: 'MBA'
+  },
+  {
+    _id: ObjectId('67bc0af57dbea72d7acb0ce3'),
+    dept: 'HR',
+    qualification: 'MBA'
+  }
+]
+myEmp> db.myEmp.find({"dept":"HR"},{"name":1});
+[
+  { _id: ObjectId('67bc0a557dbea72d7acb0ce2'), name: 'seema' },
+  { _id: ObjectId('67bc0af57dbea72d7acb0ce3'), name: 'seema' }
+]
+myEmp> db.myEmp.count({"dept":{$exists:true}})
+DeprecationWarning: Collection.count() is deprecated. Use countDocuments or estimatedDocumentCount.
+4
+
+
+myEmp> db.myEmp.replaceOne({"dept":"HR"},{"qualification":"MBA"});
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+myEmp> db.myEmp.deleteOne({"dept":"HR"});
+{ acknowledged: true, deletedCount: 1 }
+myEmp> db.myEmp.deleteMany({});
+{ acknowledged: true, deletedCount: 3 }
+myEmp> db.myEmp.deleteMany({"dept":"HR"});
+{ acknowledged: true, deletedCount: 0 }
+myEmp> db.myEmp.find().pretty();
+
+myEmp>
+
+myEmp> db.myEmp.insertMany([{name:"Albin",dept:"Physics",qualification:"MCA"},{name:"Samson",dept:"IT",qualification:"MSC"}]);
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('67bc14ab9b1e34496dcb0ce4'),
+    '1': ObjectId('67bc14ab9b1e34496dcb0ce5')
+  }
+}
+myEmp> db.myEmp.find().pretty();
+[
+  {
+    _id: ObjectId('67bc14ab9b1e34496dcb0ce4'),
+    name: 'Albin',
+    dept: 'Physics',
+    qualification: 'MCA'
+  },
+  {
+    _id: ObjectId('67bc14ab9b1e34496dcb0ce5'),
+    name: 'Samson',
+    dept: 'IT',
+    qualification: 'MSC'
+  }
+]
+myEmp> db.myEmp.replaceOne({name:"Albin"},{name:"Benny",dept:"police",qualification:"BA"});
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+myEmp> db.myEmp.find().pretty();
+[
+  {
+    _id: ObjectId('67bc14ab9b1e34496dcb0ce4'),
+    name: 'Benny',
+    dept: 'police',
+    qualification: 'BA'
+  },
+  {
+    _id: ObjectId('67bc14ab9b1e34496dcb0ce5'),
+    name: 'Samson',
+    dept: 'IT',
+    qualification: 'MSC'
+  }
+]
+myEmp>
